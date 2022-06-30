@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Xinghu Qin -- Berijing Institute of Genomics, Chinese Academy of Sciences &amp; China National Center for Bioinformation" />
+
+
+<title>VariantScan: a machine leaning tool for genetic variant association testing</title>
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">VariantScan: a machine leaning tool for genetic variant association testing</h1>
+<h4 class="author">Xinghu Qin -- Berijing Institute of Genomics, Chinese Academy of Sciences &amp; China National Center for Bioinformation</h4>
+<h4 class="date">25-06-2022</h4>
+
+
+
+<div id="instruction" class="section level1">
+<h1>Instruction</h1>
+<p>This package provides a set of tool for performing association tests to identify (e)QTLs in genome-wide association studies (GWAS,MWAS,EWAS,PWAS). It integrates three methods, Linear Model, Local Polynomial Fitting (Nonlinear Model) and Generalized Additive Model (GAM) to carry out genome-wide scanning. These methods can be also applied to case-control studies, where the ROC is used to assess the model performance.</p>
+<p>This vignette demonstrates the utility of &quot;VariantScan&quot; for association testing in genomics. In this vignette, we take the simulated genotypes of 640 individuals as an example. We compared two methods, linear regression and local polynomial regression for identifying QTLs.</p>
+<div id="install-variantscan" class="section level2">
+<h2>Install VariantScan</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#Install from CRAN</span>
+<span class="co">#install.packages(&quot;VariantScan&quot;)</span>
+## or you can get the latest version of HierDpart from github
+<span class="co">#library(devtools)</span>
+
+<span class="co">#install_github(&quot;xinghuq/VariantScan&quot;)</span>
+<span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)
+<span class="kw">library</span>(<span class="st">&quot;VariantScan&quot;</span>)</code></pre></div>
+</div>
+<div id="load-example-data" class="section level2">
+<h2>Load example data</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># example genepop file</span>
+f &lt;-<span class="st"> </span><span class="kw">system.file</span>(<span class="st">'extdata'</span>,<span class="dt">package=</span><span class="st">'VariantScan'</span>)
+infile &lt;-<span class="st"> </span><span class="kw">file.path</span>(f, <span class="st">&quot;sim1.csv&quot;</span>)
+## read genotype file
+geno=<span class="kw">read.csv</span>(infile)
+
+<span class="co"># traits</span>
+traitq=geno[,<span class="dv">14</span>]
+genotype=geno[,<span class="op">-</span><span class="kw">c</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">14</span>)]
+
+<span class="co"># get PCs as covariates</span>
+
+PCs=<span class="kw">prcomp</span>(genotype)
+<span class="kw">summary</span>(PCs<span class="op">$</span>x[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>])
+<span class="co">#&gt;       PC1                PC2          </span>
+<span class="co">#&gt;  Min.   :-4.63463   Min.   :-4.21373  </span>
+<span class="co">#&gt;  1st Qu.:-1.65826   1st Qu.:-1.25936  </span>
+<span class="co">#&gt;  Median :-0.02212   Median : 0.04811  </span>
+<span class="co">#&gt;  Mean   : 0.00000   Mean   : 0.00000  </span>
+<span class="co">#&gt;  3rd Qu.: 1.61079   3rd Qu.: 1.19832  </span>
+<span class="co">#&gt;  Max.   : 4.51837   Max.   : 4.64150</span></code></pre></div>
+</div>
+<div id="doing-vscan-using-local-polynomial-regression-fitting-without-specifying-covariates" class="section level2">
+<h2>Doing Vscan using local polynomial regression fitting without specifying covariates</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">loessW=<span class="kw">VScan</span>(<span class="dt">x=</span>genotype,<span class="dt">y=</span>(traitq),<span class="dt">methods =</span><span class="st">&quot;loess&quot;</span>)</code></pre></div>
+</div>
+<div id="doing-vscan-using-local-polynomial-regression-fitting-using-pcs-as-covariates" class="section level2">
+<h2>Doing Vscan using local polynomial regression fitting using PCs as covariates</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
+loessWcv=<span class="kw">VScan</span>(<span class="dt">x=</span>genotype,<span class="dt">y=</span>(traitq),<span class="dt">U=</span>PCs<span class="op">$</span>x[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>],<span class="dt">methods =</span><span class="st">&quot;loess&quot;</span>)</code></pre></div>
+</div>
+<div id="try-linear-model" class="section level2">
+<h2>try linear model</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lmW=<span class="kw">VScan</span>(<span class="dt">x=</span>genotype,<span class="dt">y=</span>(traitq),<span class="dt">methods =</span><span class="st">&quot;lm&quot;</span>)
+
+lmWcv=<span class="kw">VScan</span>(<span class="dt">x=</span>genotype,<span class="dt">y=</span>(traitq),<span class="dt">U=</span>PCs<span class="op">$</span>x[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>],<span class="dt">methods =</span><span class="st">&quot;lm&quot;</span>)</code></pre></div>
+</div>
+<div id="visualizing-the-association-signatures" class="section level2">
+<h2>Visualizing the association signatures</h2>
+<p>Plot Manhattan plot</p>
+<div id="linear-model" class="section level3">
+<h3>Linear model</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## 
+Loci&lt;-<span class="kw">rep</span>(<span class="st">&quot;Neutral&quot;</span>, <span class="dv">1000</span>)
+Loci[<span class="kw">c</span>(<span class="dv">201</span>,<span class="dv">211</span>,<span class="dv">221</span>,<span class="dv">231</span>,<span class="dv">241</span>,<span class="dv">251</span>,<span class="dv">261</span>,<span class="dv">271</span>,<span class="dv">281</span>,<span class="dv">291</span>)]&lt;-<span class="st">&quot;QTL&quot;</span>
+Selected_Loci&lt;-Loci[<span class="op">-</span><span class="kw">which</span>(Loci<span class="op">==</span><span class="st">&quot;Neutral&quot;</span>)]
+
+
+g1=<span class="kw">ggplot</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x=</span><span class="kw">which</span>(Loci<span class="op">==</span><span class="st">&quot;Neutral&quot;</span>), <span class="dt">y=</span><span class="op">-</span><span class="kw">log10</span>(lmWcv<span class="op">$</span>p_norm<span class="op">$</span>p.value[<span class="op">-</span><span class="kw">which</span>(Loci<span class="op">!=</span><span class="st">&quot;Neutral&quot;</span>)])), <span class="dt">col =</span> <span class="st">&quot;gray83&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x=</span><span class="kw">which</span>(Loci<span class="op">!=</span><span class="st">&quot;Neutral&quot;</span>), <span class="dt">y=</span><span class="op">-</span><span class="kw">log10</span>(lmWcv<span class="op">$</span>p_norm<span class="op">$</span>p.value[<span class="op">-</span><span class="kw">which</span>(Loci<span class="op">==</span><span class="st">&quot;Neutral&quot;</span>)]), <span class="dt">colour =</span> Selected_Loci)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;SNPs&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;-log10(p-value)&quot;</span>) <span class="op">+</span><span class="kw">ylim</span>(<span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">35</span>))<span class="op">+</span><span class="kw">theme_bw</span>()
+
+g1</code></pre></div>
+<p><img src="data:image/png;base64,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" style="display: block; margin: auto;" /> Fig.1 Manhattan plot for linear model</p>
+</div>
+<div id="local-polynomial-regression-model" class="section level3">
+<h3>Local polynomial regression model</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
+## Manhattan plot
+
+
+g2=<span class="kw">ggplot</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x=</span><span class="kw">which</span>(Loci<span class="op">==</span><span class="st">&quot;Neutral&quot;</span>), <span class="dt">y=</span><span class="op">-</span><span class="kw">log10</span>(loessWcv<span class="op">$</span>p_norm<span class="op">$</span>p.value[<span class="op">-</span><span class="kw">which</span>(Loci<span class="op">!=</span><span class="st">&quot;Neutral&quot;</span>)])), <span class="dt">col =</span> <span class="st">&quot;gray83&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x=</span><span class="kw">which</span>(Loci<span class="op">!=</span><span class="st">&quot;Neutral&quot;</span>), <span class="dt">y=</span><span class="op">-</span><span class="kw">log10</span>(loessWcv<span class="op">$</span>p_norm<span class="op">$</span>p.value[<span class="op">-</span><span class="kw">which</span>(Loci<span class="op">==</span><span class="st">&quot;Neutral&quot;</span>)]), <span class="dt">colour =</span> Selected_Loci)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;SNPs&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;-log10(p-value)&quot;</span>) <span class="op">+</span><span class="kw">ylim</span>(<span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">35</span>))<span class="op">+</span><span class="kw">theme_bw</span>()
+
+g2</code></pre></div>
+<p><img src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+<p>Fig.2 Manhattan plot for local polynomial regression model</p>
+</div>
+</div>
+</div>
+<div id="references" class="section level1">
+<h1>References</h1>
+<p>W. S. Cleveland, E. Grosse and W. M. Shyu (1992) Local regression models. Chapter 8 of Statistical Models in S eds J.M. Chambers and T.J. Hastie, Wadsworth &amp; Brooks/Cole.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
